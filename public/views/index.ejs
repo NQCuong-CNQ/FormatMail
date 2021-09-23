@@ -15,7 +15,7 @@
 <body>
 
     <form enctype="multipart/form-data">
-        <input id="upload" type=file name="files[]">
+        <input id="upload" type=file name="files[]" multiple="true">
     </form>
 
     <textarea class="form-control" style="margin-top: 1rem;" rows=35 cols=50 id="xlx_json"></textarea>
@@ -32,7 +32,8 @@
     <script>
 
         var duoimail = []
-        let datafinal = []
+        var datafinal = []
+        var gmail
         var ExcelToJSON = function () {
 
             this.parseExcel = function (file) {
@@ -48,11 +49,12 @@
                         var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
                         var json_object = JSON.stringify(XL_row_object);
                         let data = JSON.parse(json_object)
-                        let gmail
+                         
                         data.forEach(element => {
                             gmail += element.email + "\n"
                             duoimail.push(element.email)
                         });
+                        console.log(duoimail.length)
                         $('#xlx_json').val(gmail);
                     })
                 };
@@ -66,10 +68,13 @@
         };
 
         function handleFileSelect(evt) {
-
             var files = evt.target.files; 
-            var xl2json = new ExcelToJSON();
-            xl2json.parseExcel(files[0]);
+
+            for (let i = 0; i < files.length; i++) {
+                var xl2json = new ExcelToJSON();
+                xl2json.parseExcel(files[i]);
+            }
+            
         }
 
         $('#ok').on("click", function () {
@@ -80,6 +85,8 @@
                     exportdata += element + "\n"
                 }
             })
+
+            console.log(datafinal.length)
             $('#export').val(exportdata);
         })
 
