@@ -7,9 +7,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="img/logo.png" />
-
-    <!-- <link rel="stylesheet" type="text/css" href="vendors/bootstrap/css/bootstrap.min.css" /> -->
-    <!-- <link rel="stylesheet" type="text/css" href="css/app.css" /> -->
 </head>
 
 <body>
@@ -18,25 +15,30 @@
         <input id="upload" type=file name="files[]" multiple="true">
     </form>
 
-    <textarea class="form-control" style="margin-top: 1rem;" rows=35 cols=50 id="xlx_json"></textarea>
+    <p>Cách dùng: chọn nhiều files, đợi load đến khi đủ file thì đuôi mail (gmail.com) vào ô giữa, bấm ok, chờ hiện tong cong thì bấm export</p>
+
+    <textarea class="form-control" style="margin-top: 1rem;" rows=5 cols=30 id="xlx_json"></textarea>
 
     <input type="text" id="input-gmail">
     <button id="ok">ok</button>
 
-    <textarea class="form-control" style="margin-top: 1rem;" rows=35 cols=50 id="export"></textarea>
+    <textarea class="form-control" style="margin-top: 1rem;" rows=5 cols=30 id="export"></textarea>
     <button id="export-btn">Export to .txt</button>
+
+    
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.2/jszip.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.2/xlsx.min.js"></script>
     <script>
 
+        var count = 0
         var duoimail = []
         var datafinal = []
         var gmail
         var ExcelToJSON = function () {
 
-            this.parseExcel = function (file) {
+            this.parseExcel = function (file, iter) {
                 var reader = new FileReader();
 
                 reader.onload = function (e) {
@@ -51,11 +53,10 @@
                         let data = JSON.parse(json_object)
                          
                         data.forEach(element => {
-                            gmail += element.email + "\n"
                             duoimail.push(element.email)
                         });
-                        console.log(duoimail.length)
-                        $('#xlx_json').val(gmail);
+                        count++
+                        $('#xlx_json').val(`files: ${count}\ncount: ${duoimail.length}`);
                     })
                 };
 
@@ -64,6 +65,7 @@
                 };
 
                 reader.readAsBinaryString(file);
+                
             };
         };
 
@@ -71,23 +73,23 @@
             var files = evt.target.files; 
 
             for (let i = 0; i < files.length; i++) {
+                
                 var xl2json = new ExcelToJSON();
-                xl2json.parseExcel(files[i]);
+                xl2json.parseExcel(files[i], i);
             }
             
         }
 
         $('#ok').on("click", function () {
+            $('#export').val(`loading...`);
+
             let exportdata
             duoimail.forEach(element => {
                 if (element.includes($('#input-gmail').val().trim())) {
                     datafinal.push(element + "\n")
-                    exportdata += element + "\n"
                 }
             })
-
-            console.log(datafinal.length)
-            $('#export').val(exportdata);
+            $('#export').val(`tong cong: ${datafinal.length}`);
         })
 
         $('#export-btn').on("click", function () {
@@ -105,8 +107,6 @@
         }
 
     </script>
-
-
 
     <script>
         document.getElementById('upload').addEventListener('change', handleFileSelect, false);
