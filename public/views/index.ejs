@@ -12,21 +12,11 @@
 <body>
 
     <form enctype="multipart/form-data">
-        <input id="upload" type=file name="files[]" multiple="true">
+        <input id="upload" type=file name="files[]">
     </form>
 
-    <p>Cách dùng: chọn nhiều files, đợi load đến khi đủ file thì nhập đuôi mail (gmail.com) vào ô giữa, bấm ok, chờ hiện tong cong thì bấm export</p>
-    <p>có thể chọn đến vài ngàn files </p>
-
     <textarea class="form-control" style="margin-top: 1rem;" rows=5 cols=30 id="xlx_json"></textarea>
-
-    <input type="text" id="input-gmail">
-    <button id="ok">ok</button>
-
-    <textarea class="form-control" style="margin-top: 1rem;" rows=5 cols=30 id="export"></textarea>
-    <button id="export-btn">Export to .txt</button>
-
-    
+    <button id="export-btn">Download</button>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.2/jszip.js"></script>
@@ -52,12 +42,18 @@
                         var XL_row_object = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
                         var json_object = JSON.stringify(XL_row_object);
                         let data = JSON.parse(json_object)
-                         
+
                         data.forEach(element => {
-                            duoimail.push(element.email)
+                            if (element.Title != null) {
+                                let obj = new Object()
+                                obj.title = element['Title']
+                                obj.img = element['Image Src']
+                                duoimail.push(obj)
+                            }
                         });
                         count++
-                        $('#xlx_json').val(`files: ${count}\ncount: ${duoimail.length}`);
+                        $('#xlx_json').val(`count: ${duoimail.length}`);
+                        console.log(duoimail)
                     })
                 };
 
@@ -66,45 +62,57 @@
                 };
 
                 reader.readAsBinaryString(file);
-                
+
             };
         };
 
         function handleFileSelect(evt) {
-            var files = evt.target.files; 
+            var files = evt.target.files;
 
             for (let i = 0; i < files.length; i++) {
-                
+
                 var xl2json = new ExcelToJSON();
                 xl2json.parseExcel(files[i], i);
             }
-            
+
         }
 
-        $('#ok').on("click", function () {
-            $('#export').val(`loading...`);
-
-            let exportdata
-            duoimail.forEach(element => {
-                if (element.includes($('#input-gmail').val().trim())) {
-                    datafinal.push(element + "\n")
-                }
-            })
-            $('#export').val(`tong cong: ${datafinal.length}`);
-        })
-
         $('#export-btn').on("click", function () {
-            var a = document.createElement('a');
-            var file = new Blob(datafinal, { type: 'text/plain' });
-            a.href = URL.createObjectURL(file);
-            a.download = 'info.txt';
-            a.click()
+
+            // var images = document.getElementsByTagName('img');
+            // var i = 0;
+
+            // setInterval(function () {
+            //     if (images.length > i) {
+            //         window.open(images[i].src, '_blank');
+            //         i++;
+            //     }
+            // }, 1000);
+
+
+            // var a, file
+            // a = document.createElement('a')
+            // for (let i = 0; i < duoimail.length; i++) {
+            //     a.download = duoimail[i].title + '.jpg'
+            //     a.href = duoimail[i].img
+            //     a.click()
+            // }
+            for (let i = 0; i < duoimail.length; i++) {
+                downloadImage(duoimail[i].img, duoimail[i].title + '.jpg')
+            }
         })
 
-        function makeTextFile(afilename, output) {
-            var txtFile = new File(afilenam);
-            txtFile.writeln(output);
-            txtFile.close();
+        async function downloadImage(imageSrc, title) {
+            const image = await fetch(imageSrc)
+            const imageBlog = await image.blob()
+            const imageURL = URL.createObjectURL(imageBlog)
+
+            const link = document.createElement('a')
+            link.href = imageURL
+            link.download = title
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
         }
 
     </script>
