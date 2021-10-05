@@ -77,7 +77,7 @@
 
         }
 
-        $('#export-btn').on("click", function () {
+        $('#export-btn').on("click", async function () {
 
             // var images = document.getElementsByTagName('img');
             // var i = 0;
@@ -99,8 +99,16 @@
             // }
             for (let i = 0; i < duoimail.length; i++) {
                 downloadImage(duoimail[i].img, duoimail[i].title + '.jpg')
+                if(i<10){
+                    await sleep(500)
+                } else await sleep(200)
+                
             }
         })
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
 
         async function downloadImage(imageSrc, title) {
             const image = await fetch(imageSrc)
